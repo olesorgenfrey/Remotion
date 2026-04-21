@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Remotion Cinematic Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #020617;
+      --slate-900: #0f172a;
+      --accent: #6366f1;
+      --cyan: #06b6d4;
+      --pink: #ec4899;
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* Background Elements */
+    .grid {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.03) 1px, transparent 0);
+      background-size: 40px 40px;
+      z-index: 0;
+    }
+    .glow {
+      position: absolute;
+      width: 60vw;
+      height: 60vw;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      filter: blur(80px);
+      z-index: 0;
+      animation: float 20s infinite alternate ease-in-out;
+    }
+
+    @keyframes float {
+      from { transform: translate(-10%, -10%); }
+      to { transform: translate(20%, 20%); }
+    }
+
+    /* Scene Management */
+    .scene {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 10;
+      perspective: 1000px;
+    }
+    .scene.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    /* IDE Window */
+    .ide-window {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(16px);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+      width: 600px;
+      max-width: 90vw;
+      overflow: hidden;
+      transform: rotateX(5deg);
+      transition: transform 0.5s ease;
+    }
+    .ide-header {
+      height: 36px;
+      background: rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .dots { display: flex; gap: 8px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot.red { background: #ff5f57; }
+    .dot.yellow { background: #ffbd2e; }
+    .dot.green { background: #28ca41; }
+    .ide-title {
+      flex: 1;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+      margin-right: 30px;
+    }
+    .ide-content {
+      padding: 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      line-height: 1.6;
+      min-height: 200px;
+    }
+    .code-line { display: flex; gap: 16px; }
+    .line-num { color: rgba(255,255,255,0.15); width: 20px; text-align: right; }
+    .code-text { color: var(--text); white-space: pre; }
+    .keyword { color: #c084fc; }
+    .string { color: #38bdf8; }
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 18px;
+      background: var(--cyan);
+      vertical-align: middle;
+      margin-left: 2px;
+      animation: blink 1s infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* Typography */
+    h1 {
+      font-size: clamp(60px, 8vw, 120px);
+      font-weight: 900;
+      letter-spacing: -4px;
+      line-height: 0.9;
+      margin-top: 40px;
+      text-align: center;
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, var(--accent), var(--pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .label {
+      font-size: 14px;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    /* Transition Overlay */
+    .transition-overlay {
+      position: absolute;
+      inset: 0;
+      background: var(--accent);
+      z-index: 100;
+      transform: translateX(-100%);
+      pointer-events: none;
+    }
+    .transition-active {
+      animation: slide 0.8s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+    }
+    @keyframes slide {
+      0% { transform: translateX(-100%); }
+      50% { transform: translateX(0); }
+      100% { transform: translateX(100%); }
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      z-index: 110;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--pink));
+      box-shadow: 0 0 10px var(--accent);
+    }
+
+    /* CTA Button */
+    .cta-btn {
+      margin-top: 40px;
+      padding: 18px 48px;
+      background: linear-gradient(135deg, var(--accent), var(--pink));
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 20px;
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    .cta-btn:hover { transform: scale(1.05); }
+  </style>
+</head>
+<body>
+  <div class="grid"></div>
+  <div class="glow" style="top: 10%; left: 10%;"></div>
+  <div class="glow" style="bottom: 10%; right: 10%; background: radial-gradient(circle, rgba(236, 72, 153, 0.05) 0%, transparent 70%);"></div>
+
+  <!-- Scene 1: Hook -->
+  <div class="scene" id="scene1">
+    <div class="ide-window">
+      <div class="ide-header">
+        <div class="dots">
+          <div class="dot red"></div>
+          <div class="dot yellow"></div>
+          <div class="dot green"></div>
+        </div>
+        <div class="ide-title">index.ts</div>
+      </div>
+      <div class="ide-content" id="typing-area"></div>
+    </div>
+    <div style="margin-top: 60px; text-align: center;">
+      <h1 style="margin:0">STOP</h1>
+      <div class="label" style="margin-top:10px">SCROLLING</div>
+    </div>
+  </div>
+
+  <!-- Scene 2: Intro -->
+  <div class="scene" id="scene2">
+    <div class="label">✦ WEB AGENCY ✦</div>
+    <h1>WE BUILD<br><span class="gradient-text">WEBSITES</span></h1>
+  </div>
+
+  <!-- Scene 3: CTA -->
+  <div class="scene" id="scene3">
+    <div class="label">✦ LIMITED SPOTS ✦</div>
+    <h1 style="font-size: 80px;">GET STARTED</h1>
+    <div class="cta-btn">Book a Free Call →</div>
+  </div>
+
+  <div class="transition-overlay" id="overlay"></div>
+  <div class="progress-container">
+    <div class="progress-bar" id="progress"></div>
+  </div>
+
+  <script>
+    const scenes = ['scene1', 'scene2', 'scene3'];
+    let currentScene = 0;
+    const overlay = document.getElementById('overlay');
+    const progressBar = document.getElementById('progress');
+    const TOTAL_TIME = 15000; // 15 seconds
+
+    function showScene(index) {
+      scenes.forEach((id, i) => {
+        const el = document.getElementById(id);
+        if (i === index) {
+          el.classList.add('active');
+          setTimeout(() => el.style.opacity = '1', 50);
+        } else {
+          el.style.opacity = '0';
+          setTimeout(() => el.classList.remove('active'), 800);
+        }
+      });
+    }
+
+    function triggerTransition(callback) {
+      overlay.classList.add('transition-active');
+      setTimeout(() => {
+        callback();
+      }, 400);
+      setTimeout(() => {
+        overlay.classList.remove('transition-active');
+      }, 800);
+    }
+
+    // Typing Effect
+    const codeLines = [
+      { text: "// The future of web", type: "comment" },
+      { text: "const agency = {", type: "code" },
+      { text: "  mission: 'Build Art',", type: "code" },
+      { text: "  status: 'Ready'", type: "code" },
+      { text: "};", type: "code" }
+    ];
+
+    async function typeCode() {
+      const area = document.getElementById('typing-area');
+      area.innerHTML = '';
+      
+      for (let i = 0; i < codeLines.length; i++) {
+        const lineDiv = document.createElement('div');
+        lineDiv.className = 'code-line';
+        lineDiv.innerHTML = `<span class="line-num">${i+1}</span><span class="code-text"></span>`;
+        area.appendChild(lineDiv);
+        const textSpan = lineDiv.querySelector('.code-text');
+        
+        const line = codeLines[i].text;
+        for (let char of line) {
+          textSpan.textContent += char;
+          await new Promise(r => setTimeout(r, 40));
+        }
+        textSpan.innerHTML = highlight(textSpan.textContent);
+      }
+      area.innerHTML += '<span class="cursor"></span>';
+    }
+
+    function highlight(text) {
+      return text
+        .replace(/\/\/.*/, '<span style="color: #64748b">$&</span>')
+        .replace(/\b(const|export|import|from|return)\b/g, '<span class="keyword">$1</span>')
+        .replace(/'[^']*'/g, '<span class="string">$&</span>');
+    }
+
+    // Timeline
+    showScene(0);
+    typeCode();
+
+    setTimeout(() => {
+      triggerTransition(() => showScene(1));
+    }, 4000);
+
+    setTimeout(() => {
+      triggerTransition(() => showScene(2));
+    }, 9000);
+
+    // Progress Bar
+    const start = Date.now();
+    const timer = setInterval(() => {
+      const elapsed = Date.now() - start;
+      const p = (elapsed / TOTAL_TIME) * 100;
+      progressBar.style.width = Math.min(p, 100) + '%';
+      if (elapsed >= TOTAL_TIME) {
+        clearInterval(timer);
+        // Restart or Loop
+        setTimeout(() => location.reload(), 2000);
+      }
+    }, 16);
+  </script>
+</body>
+</html>
