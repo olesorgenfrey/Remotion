@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web Agency Animation</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    .stage {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 80px;
+    }
+
+    /* --- Title --- */
+    .title {
+      font-size: clamp(36px, 5vw, 64px);
+      font-weight: 700;
+      color: white;
+      letter-spacing: -2px;
+      line-height: 1.1;
+      opacity: 0;
+      transform: translateY(40px);
+      animation: slideUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.33s forwards;
+    }
+
+    @keyframes slideUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* --- Divider line --- */
+    .line {
+      height: 3px;
+      width: 0;
+      background: #6c63ff;
+      border-radius: 2px;
+      margin: 20px 0;
+      animation: growLine 0.6s ease-out 1.83s forwards;
+    }
+
+    @keyframes growLine {
+      to { width: 200px; }
+    }
+
+    /* --- Tagline --- */
+    .tagline {
+      font-size: clamp(16px, 2vw, 22px);
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 300;
+      letter-spacing: 1px;
+      opacity: 0;
+      animation: fadeIn 0.6s ease-out 1.33s forwards;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    /* --- Browser window --- */
+    .browser {
+      width: clamp(260px, 35vw, 480px);
+      height: clamp(165px, 22vw, 300px);
+      border: 3px solid white;
+      border-radius: 12px;
+      overflow: hidden;
+      opacity: 0;
+      transform: scale(0.85);
+      animation: popIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) 2.17s forwards;
+    }
+
+    @keyframes popIn {
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .browser-bar {
+      height: 40px;
+      background: rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .url-bar {
+      flex: 1;
+      height: 18px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 9px;
+      margin-left: 8px;
+    }
+
+    .browser-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .skel {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    .skel-title { height: 20px; width: 60%; }
+    .skel-line1 { height: 12px; width: 90%; background: rgba(255,255,255,0.12); }
+    .skel-line2 { height: 12px; width: 75%; background: rgba(255,255,255,0.12); }
+    .skel-block { height: 70px; width: 100%; background: rgba(255,255,255,0.08); border-radius: 8px; margin-top: 8px; }
+
+    /* Replay button */
+    .replay {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: rgba(108, 99, 255, 0.85);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 15px;
+      cursor: pointer;
+      font-family: inherit;
+      backdrop-filter: blur(4px);
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <!-- Left: text -->
+    <div>
+      <div class="title">We Build<br>Websites.</div>
+      <div class="line"></div>
+      <div class="tagline">Fast. Clean. Modern.</div>
+    </div>
+
+    <!-- Right: browser mockup -->
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="url-bar"></div>
+      </div>
+      <div class="browser-body">
+        <div class="skel skel-title"></div>
+        <div class="skel skel-line1"></div>
+        <div class="skel skel-line2"></div>
+        <div class="skel skel-block"></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="replay" onclick="location.reload()">↺ Nochmal</button>
+</body>
+</html>
