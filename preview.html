@@ -16,196 +16,157 @@
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
       background: var(--cream);
-      width: 100vw; height: 100vh;
-      overflow: hidden;
+      width:100vw; height:100vh;
+      overflow:hidden;
       font-family: 'Playfair Display', Georgia, serif;
       color: var(--dark);
     }
 
-    /* ── Scenes ─────────────────────────────────── */
+    /* ── Scenes: hidden by default ─────────────── */
     .scene {
-      position: absolute; inset: 0;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
+      display: none;
+      position: absolute; inset:0;
+      flex-direction:column;
+      align-items:center; justify-content:center;
       padding: clamp(32px,5vw,80px);
-      pointer-events: none;
+      opacity:0;
+      transition: opacity 0.6s ease;
     }
+    .scene.active { display:flex; }
+    .scene.visible { opacity:1; }
     .scene.dark { background: var(--dark); }
 
-    /* ── Shared element styles ───────────────────── */
+    /* ── Child element enter animation ─────────── */
     .el {
-      opacity: 0;
-      transform: translateY(28px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
+      opacity:0;
+      transform: translateY(26px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
     }
-    .el.in  { opacity: 1; transform: translateY(0); }
-    .el.out { opacity: 0; transform: translateY(-16px); transition-duration: 0.5s; }
+    .el.in { opacity:1; transform:translateY(0); }
 
+    /* ── Typography ─────────────────────────────── */
     .label {
-      font-family: 'Inter', sans-serif;
-      font-size: clamp(9px, 1.1vw, 11px);
-      font-weight: 500; letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--terra);
-      margin-bottom: 28px;
+      font-family:'Inter',sans-serif;
+      font-size: clamp(9px,1.1vw,11px);
+      font-weight:500; letter-spacing:3px;
+      text-transform:uppercase;
+      color:var(--terra); margin-bottom:28px;
     }
-    .label.light { color: rgba(244,239,228,0.5); }
+    .label.light { color:rgba(244,239,228,0.55); }
 
-    .rule {
-      width: 56px; height: 1px;
-      background: var(--rule);
-      margin: 28px 0;
-    }
-    .rule.terra { background: var(--terra); width: 40px; }
+    .rule { width:56px; height:1px; background:var(--rule); margin:28px 0; }
+    .rule.terra { background:var(--terra); width:40px; }
 
     h1 {
-      font-size: clamp(36px, 5.5vw, 78px);
-      font-weight: 700; line-height: 1.05;
-      text-align: center; color: var(--dark);
+      font-size: clamp(36px,5.5vw,76px);
+      font-weight:700; line-height:1.05;
+      text-align:center;
     }
-    h1.light { color: var(--cream); }
-    h1 em { font-style: italic; color: var(--terra); font-weight: 700; }
-    h1.light em { color: #e87d56; }
+    h1.light { color:var(--cream); }
+    h1 em { font-style:italic; color:var(--terra); }
+    h1.light em { color:#e87d56; }
 
     .sub {
-      font-family: 'Inter', sans-serif;
-      font-size: clamp(14px, 1.6vw, 19px);
-      font-weight: 300; color: var(--mid);
-      text-align: center; max-width: 540px;
-      line-height: 1.65;
+      font-family:'Inter',sans-serif;
+      font-size: clamp(14px,1.6vw,19px);
+      font-weight:300; color:var(--mid);
+      text-align:center; max-width:540px; line-height:1.65;
     }
-    .sub.light { color: rgba(244,239,228,0.65); }
+    .sub.light { color:rgba(244,239,228,0.65); }
 
-    /* ── Scene 1 — Brand intro ───────────────────── */
+    /* ── Scene 1 ────────────────────────────────── */
     .brand-mark {
-      font-family: 'Inter', sans-serif;
-      font-size: clamp(13px, 1.4vw, 16px);
-      font-weight: 600; letter-spacing: 2px;
-      color: var(--dark);
-      display: flex; align-items: center; gap: 8px;
-      margin-bottom: 40px;
+      font-family:'Inter',sans-serif;
+      font-size: clamp(13px,1.4vw,16px);
+      font-weight:600; letter-spacing:2px;
+      display:flex; align-items:center; gap:8px;
+      margin-bottom:40px;
     }
     .brand-mark span {
-      display: inline-block;
-      width: 8px; height: 8px;
-      background: var(--terra);
-      transform: rotate(45deg);
+      display:inline-block; width:8px; height:8px;
+      background:var(--terra); transform:rotate(45deg);
     }
 
-    /* ── Scene 3 — 3-line stagger ────────────────── */
+    /* ── Scene 3 ────────────────────────────────── */
     .stagger-line {
-      font-size: clamp(34px, 5vw, 70px);
-      font-weight: 700; line-height: 1.1;
-      text-align: left; width: 100%; max-width: 700px;
+      font-size: clamp(34px,5vw,68px);
+      font-weight:700; line-height:1.1;
+      text-align:left; width:100%; max-width:700px;
     }
-    .stagger-line.terra { color: var(--terra); font-style: italic; }
+    .stagger-line.terra { color:var(--terra); font-style:italic; }
 
-    /* ── Scene 4 — Steps ─────────────────────────── */
-    .steps {
-      display: flex; gap: clamp(24px, 4vw, 60px);
-      max-width: 900px; width: 100%;
-    }
-    .step {
-      flex: 1; border-top: 1px solid var(--rule);
-      padding-top: 20px;
-    }
+    /* ── Scene 4 ────────────────────────────────── */
+    .steps { display:flex; gap:clamp(20px,4vw,56px); max-width:900px; width:100%; }
+    .step { flex:1; border-top:1px solid var(--rule); padding-top:20px; }
     .step-num {
-      font-family: 'Inter', sans-serif;
-      font-size: 10px; font-weight: 500;
-      letter-spacing: 2.5px; text-transform: uppercase;
-      color: var(--terra); margin-bottom: 14px;
+      font-family:'Inter',sans-serif;
+      font-size:10px; font-weight:500;
+      letter-spacing:2.5px; text-transform:uppercase;
+      color:var(--terra); margin-bottom:14px;
     }
-    .step h3 {
-      font-size: clamp(16px, 2.2vw, 26px);
-      font-weight: 700; line-height: 1.2;
-      margin-bottom: 10px;
-    }
+    .step h3 { font-size:clamp(16px,2.2vw,26px); font-weight:700; line-height:1.2; margin-bottom:10px; }
     .step p {
-      font-family: 'Inter', sans-serif;
-      font-size: clamp(12px, 1.3vw, 15px);
-      font-weight: 300; color: var(--mid);
-      line-height: 1.6;
+      font-family:'Inter',sans-serif;
+      font-size:clamp(12px,1.3vw,15px);
+      font-weight:300; color:var(--mid); line-height:1.6;
     }
 
-    /* ── Scene 5 — Pricing ───────────────────────── */
-    .cards {
-      display: flex; gap: clamp(12px, 2vw, 24px);
-      max-width: 860px; width: 100%;
-    }
+    /* ── Scene 5 ────────────────────────────────── */
+    .cards { display:flex; gap:clamp(12px,2vw,20px); max-width:860px; width:100%; }
     .card {
-      flex: 1; border: 1px solid var(--rule);
-      border-radius: 8px; padding: clamp(16px, 2.5vw, 32px);
-      background: var(--cream);
+      flex:1; border:1px solid var(--rule);
+      border-radius:8px; padding:clamp(16px,2.5vw,28px);
     }
-    .card.featured {
-      background: var(--terra); border-color: var(--terra);
-      color: #fff;
-    }
+    .card.featured { background:var(--terra); border-color:var(--terra); color:#fff; }
     .card-title {
-      font-family: 'Inter', sans-serif;
-      font-size: clamp(10px, 1.1vw, 12px);
-      font-weight: 500; letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--mid); margin-bottom: 12px;
+      font-family:'Inter',sans-serif;
+      font-size:clamp(9px,1vw,11px);
+      font-weight:500; letter-spacing:2px; text-transform:uppercase;
+      color:var(--mid); margin-bottom:10px;
     }
-    .card.featured .card-title { color: rgba(255,255,255,0.7); }
-    .card-price {
-      font-size: clamp(28px, 3.5vw, 48px);
-      font-weight: 700; line-height: 1;
-      margin-bottom: 6px;
-    }
+    .card.featured .card-title { color:rgba(255,255,255,0.7); }
+    .card-price { font-size:clamp(26px,3.5vw,46px); font-weight:700; line-height:1; margin-bottom:4px; }
     .card-price sub {
-      font-size: clamp(11px, 1.2vw, 14px);
-      font-weight: 400; font-family: 'Inter', sans-serif;
-      color: var(--mid); vertical-align: baseline;
+      font-size:clamp(11px,1.1vw,13px); font-weight:400;
+      font-family:'Inter',sans-serif; color:var(--mid); vertical-align:baseline;
     }
-    .card.featured .card-price sub { color: rgba(255,255,255,0.7); }
+    .card.featured .card-price sub { color:rgba(255,255,255,0.7); }
     .card-desc {
-      font-family: 'Inter', sans-serif;
-      font-size: clamp(11px, 1.1vw, 13px);
-      font-weight: 300; color: var(--mid);
-      line-height: 1.5; margin-top: 10px;
+      font-family:'Inter',sans-serif;
+      font-size:clamp(11px,1.1vw,13px);
+      font-weight:300; color:var(--mid); line-height:1.5; margin-top:10px;
     }
-    .card.featured .card-desc { color: rgba(255,255,255,0.8); }
+    .card.featured .card-desc { color:rgba(255,255,255,0.8); }
 
-    /* ── Scene 6 — CTA ───────────────────────────── */
+    /* ── Scene 6 ────────────────────────────────── */
     .cta-btn {
-      display: inline-block;
-      background: var(--terra); color: #fff;
-      font-family: 'Inter', sans-serif;
-      font-size: clamp(14px, 1.5vw, 17px);
-      font-weight: 500;
-      padding: clamp(12px, 1.5vw, 16px) clamp(24px, 3vw, 36px);
-      border-radius: 100px;
-      margin-top: 36px;
-      border: none; cursor: default;
+      background:var(--terra); color:#fff;
+      font-family:'Inter',sans-serif;
+      font-size:clamp(14px,1.5vw,17px); font-weight:500;
+      padding:clamp(12px,1.5vw,16px) clamp(24px,3vw,36px);
+      border-radius:100px; margin-top:36px; display:inline-block;
     }
     .fine {
-      font-family: 'Inter', sans-serif;
-      font-size: clamp(10px, 1vw, 12px);
-      letter-spacing: 2px; text-transform: uppercase;
-      color: rgba(244,239,228,0.35);
-      margin-top: 48px;
+      font-family:'Inter',sans-serif;
+      font-size:clamp(10px,1vw,12px); letter-spacing:2px;
+      text-transform:uppercase;
+      color:rgba(244,239,228,0.3); margin-top:48px;
     }
 
-    /* ── Replay ──────────────────────────────────── */
+    /* ── UI chrome ──────────────────────────────── */
     .replay {
-      position: fixed; bottom: 20px; right: 20px;
-      background: var(--dark); color: var(--cream);
-      border: none; border-radius: 100px;
-      padding: 9px 18px;
-      font-family: 'Inter', sans-serif;
-      font-size: 13px; cursor: pointer;
-      opacity: 0; transition: opacity 0.5s ease;
-      pointer-events: none;
+      position:fixed; bottom:20px; right:20px;
+      background:var(--dark); color:var(--cream);
+      border:none; border-radius:100px;
+      padding:9px 18px;
+      font-family:'Inter',sans-serif; font-size:13px; cursor:pointer;
+      opacity:0; transition:opacity 0.5s ease; pointer-events:none;
     }
-    .replay.visible { opacity: 1; pointer-events: all; }
+    .replay.visible { opacity:1; pointer-events:all; }
 
-    /* ── Progress bar ────────────────────────────── */
     .progress {
-      position: fixed; bottom: 0; left: 0;
-      height: 2px; background: var(--terra);
-      width: 0%; transition: width 0.1s linear;
+      position:fixed; bottom:0; left:0;
+      height:2px; background:var(--terra); width:0%;
     }
   </style>
 </head>
@@ -213,40 +174,30 @@
 
 <!-- Scene 1: Brand Intro (0–5s) -->
 <div class="scene" id="s1">
-  <div class="el" id="s1-logo">
-    <div class="brand-mark"><span></span>Storefront</div>
-  </div>
+  <div class="el" id="s1-logo"><div class="brand-mark"><span></span>Storefront</div></div>
   <div class="el" id="s1-label"><p class="label">Dein Betrieb ist der Nächste</p></div>
-  <div class="el" id="s1-h1">
-    <h1>Dein Betrieb sieht<br>nach etwas aus.</h1>
-  </div>
+  <div class="el" id="s1-h1"><h1>Dein Betrieb sieht<br>nach etwas aus.</h1></div>
   <div class="el" id="s1-rule"><div class="rule"></div></div>
-  <div class="el" id="s1-sub">
-    <p class="sub">Deine Website sollte das <em style="font-style:italic;color:var(--terra)">zeigen.</em></p>
-  </div>
+  <div class="el" id="s1-sub"><p class="sub">Deine Website sollte das <em style="font-style:italic;color:var(--terra)">zeigen.</em></p></div>
 </div>
 
 <!-- Scene 2: The Problem (5–10s) -->
 <div class="scene" id="s2">
   <div class="el" id="s2-label"><p class="label">Das eigentliche Problem</p></div>
-  <div class="el" id="s2-h1">
-    <h1>Deine Website sollte<br>nicht dein zweiter<br>Job sein.</h1>
-  </div>
+  <div class="el" id="s2-h1"><h1>Deine Website sollte nicht<br>dein zweiter Job sein.</h1></div>
   <div class="el" id="s2-rule"><div class="rule terra"></div></div>
-  <div class="el" id="s2-sub">
-    <p class="sub">Die meisten Betriebe haben keine schlechte Website, weil ihnen die Website egal ist. Sie haben einfach keine Zeit dafür.</p>
-  </div>
+  <div class="el" id="s2-sub"><p class="sub">Die meisten Betriebe haben keine schlechte Website, weil ihnen die Website egal ist. Sie haben einfach keine Zeit dafür.</p></div>
 </div>
 
 <!-- Scene 3: Value Prop (10–16s) -->
-<div class="scene" id="s3" style="align-items:flex-start; padding-left: clamp(48px,8vw,140px);">
+<div class="scene" id="s3" style="align-items:flex-start; padding-left:clamp(48px,8vw,140px);">
   <div class="el stagger-line" id="s3-l1">Ich bau deine Website.</div>
-  <div class="el stagger-line" id="s3-l2" style="margin-top:12px;">Ich kümmere mich.</div>
-  <div class="el stagger-line terra" id="s3-l3" style="margin-top:12px;"><em>Du machst dein Business.</em></div>
+  <div class="el stagger-line" id="s3-l2" style="margin-top:10px;">Ich kümmere mich.</div>
+  <div class="el stagger-line terra" id="s3-l3" style="margin-top:10px;"><em>Du machst dein Business.</em></div>
 </div>
 
 <!-- Scene 4: How it works (16–22s) -->
-<div class="scene" id="s4" style="gap:40px;">
+<div class="scene" id="s4" style="gap:36px;">
   <div class="el" id="s4-label"><p class="label">Wie es läuft</p></div>
   <div class="steps">
     <div class="step el" id="s4-1">
@@ -268,7 +219,7 @@
 </div>
 
 <!-- Scene 5: Pricing (22–27s) -->
-<div class="scene" id="s5" style="gap:32px;">
+<div class="scene" id="s5" style="gap:28px;">
   <div class="el" id="s5-label"><p class="label">Ab €29 / Monat · Oder einmalig kaufen</p></div>
   <div class="cards">
     <div class="card el" id="s5-c1">
@@ -288,22 +239,16 @@
     </div>
   </div>
   <div class="el" id="s5-fine">
-    <p class="sub" style="font-size:clamp(10px,1.1vw,13px);letter-spacing:1.5px;text-transform:uppercase;font-family:'Inter',sans-serif;">Keine Einrichtungsgebühr · Monatlich kündbar · Kein Vertrag</p>
+    <p class="sub" style="font-size:clamp(10px,1.1vw,12px);letter-spacing:2px;text-transform:uppercase;font-family:'Inter',sans-serif;color:var(--mid);">Keine Einrichtungsgebühr · Monatlich kündbar · Kein Vertrag</p>
   </div>
 </div>
 
 <!-- Scene 6: CTA (27–30s) -->
 <div class="scene dark" id="s6">
-  <div class="el" id="s6-sub"><p class="sub light" style="font-size:clamp(13px,1.4vw,17px);letter-spacing:2px;text-transform:uppercase;font-family:'Inter',sans-serif;">Lass uns reden</p></div>
-  <div class="el" id="s6-h1" style="margin-top:16px;">
-    <h1 class="light"><em>unverbindlich.</em></h1>
-  </div>
-  <div class="el" id="s6-btn">
-    <div class="cta-btn">15 Minuten Gespräch buchen →</div>
-  </div>
-  <div class="el" id="s6-brand">
-    <p class="fine">◆ Storefront Studio</p>
-  </div>
+  <div class="el" id="s6-sub"><p class="sub light" style="font-size:clamp(13px,1.4vw,16px);letter-spacing:3px;text-transform:uppercase;font-family:'Inter',sans-serif;">Lass uns reden</p></div>
+  <div class="el" id="s6-h1" style="margin-top:14px;"><h1 class="light"><em>unverbindlich.</em></h1></div>
+  <div class="el" id="s6-btn"><div class="cta-btn">15 Minuten Gespräch buchen →</div></div>
+  <div class="el" id="s6-brand"><p class="fine">◆ Storefront Studio</p></div>
 </div>
 
 <button class="replay" id="replay" onclick="location.reload()">↺ Nochmal</button>
@@ -312,85 +257,79 @@
 <script>
   const TOTAL = 30000;
 
-  function at(ms, fn) { setTimeout(fn, ms); }
+  function showScene(id, enterDelay, exitDelay) {
+    const el = document.getElementById(id);
+    setTimeout(() => {
+      el.style.display = 'flex';
+      requestAnimationFrame(() => requestAnimationFrame(() => el.style.opacity = '1'));
+    }, enterDelay);
+    setTimeout(() => {
+      el.style.opacity = '0';
+      setTimeout(() => el.style.display = 'none', 700);
+    }, exitDelay);
+  }
 
-  function show(id, delay=0) {
-    at(delay, () => {
+  function show(id, delay) {
+    setTimeout(() => {
       const el = document.getElementById(id);
       if (el) el.classList.add('in');
-    });
+    }, delay);
   }
 
-  function hide(id, delay=0) {
-    at(delay, () => {
-      const el = document.getElementById(id);
-      if (el) { el.classList.remove('in'); el.classList.add('out'); }
-    });
-  }
+  // ── Scene 1 (0–5s) ──
+  showScene('s1', 0, 4400);
+  show('s1-logo',   200);
+  show('s1-label',  600);
+  show('s1-h1',    1000);
+  show('s1-rule',  1600);
+  show('s1-sub',   2100);
 
-  function hideAll(ids, delay=0) { ids.forEach(id => hide(id, delay)); }
+  // ── Scene 2 (5–10s) ──
+  showScene('s2', 5000, 9400);
+  show('s2-label', 5300);
+  show('s2-h1',    5700);
+  show('s2-rule',  6500);
+  show('s2-sub',   7000);
 
-  const S1 = ['s1-logo','s1-label','s1-h1','s1-rule','s1-sub'];
-  const S2 = ['s2-label','s2-h1','s2-rule','s2-sub'];
-  const S3 = ['s3-l1','s3-l2','s3-l3'];
-  const S4 = ['s4-label','s4-1','s4-2','s4-3'];
-  const S5 = ['s5-label','s5-c1','s5-c2','s5-c3','s5-fine'];
-  const S6 = ['s6-sub','s6-h1','s6-btn','s6-brand'];
+  // ── Scene 3 (10–16s) ──
+  showScene('s3', 10000, 15400);
+  show('s3-l1', 10400);
+  show('s3-l2', 11300);
+  show('s3-l3', 12200);
 
-  // — Scene 1 (0–5s) —
-  show('s1-logo',    200);
-  show('s1-label',   600);
-  show('s1-h1',     1000);
-  show('s1-rule',   1600);
-  show('s1-sub',    2000);
-  hideAll(S1,       4400);
-
-  // — Scene 2 (5–10s) —
-  show('s2-label',  5300);
-  show('s2-h1',     5700);
-  show('s2-rule',   6500);
-  show('s2-sub',    7000);
-  hideAll(S2,       9400);
-
-  // — Scene 3 (10–16s) —
-  show('s3-l1',    10400);
-  show('s3-l2',    11300);
-  show('s3-l3',    12200);
-  hideAll(S3,      15400);
-
-  // — Scene 4 (16–22s) —
+  // ── Scene 4 (16–22s) ──
+  showScene('s4', 16000, 21400);
   show('s4-label', 16300);
   show('s4-1',     16800);
-  show('s4-2',     17500);
-  show('s4-3',     18200);
-  hideAll(S4,      21400);
+  show('s4-2',     17600);
+  show('s4-3',     18400);
 
-  // — Scene 5 (22–27s) —
+  // ── Scene 5 (22–27s) ──
+  showScene('s5', 22000, 26400);
   show('s5-label', 22300);
   show('s5-c1',    22800);
-  show('s5-c2',    23300);
-  show('s5-c3',    23800);
-  show('s5-fine',  24400);
-  hideAll(S5,      26400);
+  show('s5-c2',    23400);
+  show('s5-c3',    24000);
+  show('s5-fine',  24600);
 
-  // — Scene 6 (27–30s) —
+  // ── Scene 6 (27–30s) ──
+  showScene('s6', 27000, 32000); // no exit
   show('s6-sub',   27300);
   show('s6-h1',    27800);
-  show('s6-btn',   28400);
-  show('s6-brand', 29000);
+  show('s6-btn',   28500);
+  show('s6-brand', 29100);
 
-  // — Replay button —
-  at(29500, () => document.getElementById('replay').classList.add('visible'));
+  // ── Replay ──
+  setTimeout(() => document.getElementById('replay').classList.add('visible'), 29500);
 
-  // — Progress bar —
-  const prog = document.getElementById('progress');
-  const start = Date.now();
-  function tick() {
-    const p = Math.min((Date.now() - start) / TOTAL * 100, 100);
-    prog.style.width = p + '%';
+  // ── Progress bar ──
+  const bar = document.getElementById('progress');
+  const t0 = Date.now();
+  (function tick() {
+    const p = Math.min((Date.now() - t0) / TOTAL * 100, 100);
+    bar.style.width = p + '%';
     if (p < 100) requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
+  })();
 </script>
 </body>
 </html>
