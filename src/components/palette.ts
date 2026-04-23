@@ -1,0 +1,21 @@
+export const P = {
+  bg:           "#0A0E1A",
+  bgMid:        "#0D1117",
+  bgDeep:       "#070B14",
+  accent:       "#00D4FF",
+  accentOrange: "#FF6B35",
+  offWhite:     "#F0EDE6",
+  offWhiteDim:  "#C8C4BC",
+  muted:        "#3D4560",
+  mutedLight:   "#5C6680",
+  // syntax
+  synKeyword:   "#FF79C6",
+  synType:      "#8BE9FD",
+  synString:    "#F1FA8C",
+  synNumber:    "#BD93F9",
+  synFn:        "#50FA7B",
+  synComment:   "#5C6680",
+  synDefault:   "#F8F8F2",
+  synOperator:  "#FF79C6",
+  synBracket:   "#FFB86C",
+} as const;
