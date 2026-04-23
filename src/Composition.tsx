@@ -5,290 +5,340 @@ import {
   spring,
   useCurrentFrame,
   useVideoConfig,
-  Sequence,
   Easing,
 } from "remotion";
+import { CinematicFrame } from "./components/CinematicFrame";
+import { Background } from "./components/Background";
+import { CodeEditor } from "./components/CodeEditor";
+import { Overlay } from "./components/Overlay";
+import { P } from "./components/palette";
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
+// ─── TIMING CONSTANTS ────────────────────────────────────────────────────────
 
-const fadeIn = (frame: number, start: number, dur: number) =>
-  interpolate(frame, [start, start + dur], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
+const T = {
+  // Scene 1: cold open / title
+  titleIn:       0,
+  titleHold:     90,
+  // Scene 2: editor enters
+  editorEnter:   80,
+  codeStart:     100,
+  // Step-zoom keyframes
+  zoom1Start:    300,
+  zoom1End:      330,
+  zoom2Start:    490,
+  zoom2End:      520,
+  zoomOutStart:  680,
+  zoomOutEnd:    720,
+  // Compilation
+  compileStart:  580,
+  // Outro
+  outroStart:    760,
+  // End
+  end:           900,
+} as const;
 
-const slideUp = (frame: number, start: number, dur: number, dist = 60) =>
-  interpolate(frame, [start, start + dur], [dist, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-    easing: Easing.out(Easing.cubic),
-  });
+// ─── EXPO-OUT EASING ─────────────────────────────────────────────────────────
 
-// ─── CINEMATIC COMPONENTS ─────────────────────────────────────────────────────
+const expoOut = Easing.bezier(0.16, 1, 0.3, 1);
 
-const CinematicBackground: React.FC = () => {
+// ─── STEP ZOOM LOGIC ─────────────────────────────────────────────────────────
+
+function getZoom(frame: number): number {
+  if (frame < T.zoom1Start) return 1.0;
+  if (frame < T.zoom1End) {
+    return interpolate(
+      frame,
+      [T.zoom1Start, T.zoom1End],
+      [1.0, 1.32],
+      { easing: expoOut, extrapolateRight: "clamp" }
+    );
+  }
+  if (frame < T.zoom2Start) return 1.32;
+  if (frame < T.zoom2End) {
+    return interpolate(
+      frame,
+      [T.zoom2Start, T.zoom2End],
+      [1.32, 1.64],
+      { easing: expoOut, extrapolateRight: "clamp" }
+    );
+  }
+  if (frame < T.zoomOutStart) return 1.64;
+  if (frame < T.zoomOutEnd) {
+    return interpolate(
+      frame,
+      [T.zoomOutStart, T.zoomOutEnd],
+      [1.64, 1.0],
+      { easing: expoOut, extrapolateRight: "clamp" }
+    );
+  }
+  return 1.0;
+}
+
+// ─── KINETIC TITLE ────────────────────────────────────────────────────────────
+
+const KineticTitle: React.FC<{ startFrame: number }> = ({ startFrame }) => {
   const frame = useCurrentFrame();
-  return (
-    <AbsoluteFill style={{ background: "#020617", overflow: "hidden" }}>
-      {/* Grid Pattern */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage: `radial-gradient(circle at 2px 2px, rgba(255,255,255,0.03) 1px, transparent 0)`,
-          backgroundSize: "40px 40px",
-        }}
-      />
-      {/* Animated Glows */}
-      <div
-        style={{
-          position: "absolute",
-          width: "100%",
-          height: "100%",
-          background: `radial-gradient(circle at ${50 + Math.sin(frame * 0.01) * 20}% ${50 + Math.cos(frame * 0.01) * 20}%, rgba(108, 99, 255, 0.1) 0%, transparent 60%)`,
-        }}
-      />
-    </AbsoluteFill>
-  );
-};
+  const { width } = useVideoConfig();
 
-const IDEWindow: React.FC<{
-  children: React.ReactNode;
-  title?: string;
-  style?: React.CSSProperties;
-}> = ({ children, title = "index.ts", style }) => {
-  return (
+  const line1 = "MOTION";
+  const line2 = "DESIGN";
+
+  const renderLine = (text: string, lineDelay: number) => (
     <div
       style={{
-        background: "rgba(15, 23, 42, 0.7)",
-        backdropFilter: "blur(16px)",
-        borderRadius: 12,
-        border: "1px solid rgba(255, 255, 255, 0.1)",
-        boxShadow: "0 30px 60px rgba(0, 0, 0, 0.5)",
-        overflow: "hidden",
         display: "flex",
-        flexDirection: "column",
-        ...style,
+        justifyContent: "center",
+        overflow: "hidden",
       }}
     >
-      <div
-        style={{
-          height: 36,
-          background: "rgba(255, 255, 255, 0.05)",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 14px",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
-        }}
-      >
-        <div style={{ display: "flex", gap: 8 }}>
-          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#ff5f57" }} />
-          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#ffbd2e" }} />
-          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#28ca41" }} />
-        </div>
-        <div style={{ flex: 1, textAlign: "center", fontSize: 12, color: "rgba(255, 255, 255, 0.3)", fontFamily: "monospace", marginRight: 30 }}>
-          {title}
-        </div>
-      </div>
-      <div style={{ flex: 1, padding: 20, position: "relative" }}>{children}</div>
-    </div>
-  );
-};
-
-const TypingCode: React.FC<{ code: string[]; startFrame: number }> = ({ code, startFrame }) => {
-  const frame = useCurrentFrame();
-  const relativeFrame = Math.max(0, frame - startFrame);
-  const totalChars = code.join("\n").length;
-  const charsToShow = Math.floor(interpolate(relativeFrame, [0, 60], [0, totalChars], { extrapolateRight: "clamp" }));
-
-  let count = 0;
-  return (
-    <div style={{ fontFamily: "monospace", fontSize: 16, lineHeight: 1.5, color: "#e2e8f0" }}>
-      {code.map((line, i) => {
-        const lineStart = count;
-        count += line.length + 1;
-        if (charsToShow <= lineStart) return null;
-        const text = line.substring(0, Math.min(line.length, charsToShow - lineStart));
+      {text.split("").map((ch, i) => {
+        const p = spring({
+          frame: frame - startFrame - lineDelay - i * 4,
+          fps: 60,
+          config: { damping: 14, stiffness: 160, mass: 0.7 },
+        });
         return (
-          <div key={i} style={{ whiteSpace: "pre" }}>
-            <span style={{ color: "rgba(255,255,255,0.2)", marginRight: 15 }}>{i + 1}</span>
-            {text}
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
-// ─── ORIGINAL COMPONENTS (ADAPTED) ────────────────────────────────────────────
-
-const KineticText: React.FC<{
-  text: string;
-  startFrame: number;
-  stagger?: number;
-  style?: React.CSSProperties;
-}> = ({ text, startFrame, stagger = 3, style }) => {
-  const frame = useCurrentFrame();
-  return (
-    <span style={{ display: "inline-block", ...style }}>
-      {text.split("").map((char, i) => {
-        const cf = frame - startFrame - i * stagger;
-        const opacity = interpolate(cf, [0, 8], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-        const y = interpolate(cf, [0, 12], [40, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.out(Easing.back(1.5)) });
-        return (
-          <span key={i} style={{ display: "inline-block", opacity, transform: `translateY(${y}px)` }}>
-            {char === " " ? " " : char}
+          <span
+            key={i}
+            style={{
+              display: "inline-block",
+              opacity: p,
+              transform: `translateY(${interpolate(p, [0, 1], [80, 0])}px) scale(${interpolate(p, [0, 1], [0.6, 1])})`,
+              color: P.offWhite,
+              fontSize: Math.min(width * 0.085, 148),
+              fontWeight: 900,
+              fontFamily: "Helvetica Neue, Arial, sans-serif",
+              letterSpacing: "-0.03em",
+              lineHeight: 1,
+              textTransform: "uppercase" as const,
+            }}
+          >
+            {ch === " " ? " " : ch}
           </span>
         );
       })}
-    </span>
+    </div>
   );
-};
 
-const RotatingShape: React.FC<{
-  x: number;
-  y: number;
-  size: number;
-  color: string;
-  startAngle?: number;
-  speed?: number;
-  opacity?: number;
-}> = ({ x, y, size, color, startAngle = 0, speed = 1, opacity = 0.12 }) => {
-  const frame = useCurrentFrame();
-  const angle = startAngle + frame * speed * 0.5;
+  const subtitleP = spring({
+    frame: frame - startFrame - 60,
+    fps: 60,
+    config: { damping: 20, stiffness: 120 },
+  });
+
+  const showEditor = frame >= T.editorEnter + 40;
+
+  // Fade title out when editor is well established
+  const titleFadeOut = interpolate(
+    frame,
+    [T.editorEnter + 60, T.editorEnter + 120],
+    [1, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: expoOut }
+  );
+
   return (
     <div
       style={{
         position: "absolute",
-        left: `${x}%`,
-        top: `${y}%`,
-        width: size,
-        height: size,
-        border: `2px solid ${color}`,
-        borderRadius: 8,
+        inset: 0,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 4,
+        opacity: titleFadeOut,
+        pointerEvents: "none",
+      }}
+    >
+      {renderLine(line1, 0)}
+      {renderLine(line2, 15)}
+
+      <div
+        style={{
+          marginTop: 24,
+          opacity: subtitleP * titleFadeOut,
+          transform: `translateY(${interpolate(subtitleP, [0, 1], [20, 0])}px)`,
+          color: P.accent,
+          fontSize: 13,
+          fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+          letterSpacing: "0.35em",
+          textTransform: "uppercase" as const,
+        }}
+      >
+        by Simplicissimus
+      </div>
+
+      {/* Accent line */}
+      <div
+        style={{
+          marginTop: 20,
+          width: interpolate(subtitleP, [0, 1], [0, 180]),
+          height: 1.5,
+          background: `linear-gradient(90deg, transparent, ${P.accent}, transparent)`,
+          opacity: subtitleP * 0.6 * titleFadeOut,
+        }}
+      />
+    </div>
+  );
+};
+
+// ─── OUTRO ────────────────────────────────────────────────────────────────────
+
+const Outro: React.FC = () => {
+  const frame = useCurrentFrame();
+
+  const p = spring({
+    frame: frame - T.outroStart,
+    fps: 60,
+    config: { damping: 20, stiffness: 100 },
+  });
+  const opacity = interpolate(p, [0, 0.35], [0, 1], {
+    extrapolateRight: "clamp",
+  });
+  const fadeOut = interpolate(
+    frame,
+    [T.end - 40, T.end],
+    [1, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+  );
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "flex-end",
+        paddingBottom: 72,
+        opacity: opacity * fadeOut,
+        pointerEvents: "none",
+      }}
+    >
+      <div
+        style={{
+          width: interpolate(p, [0, 1], [0, 320]),
+          height: 1,
+          background: `linear-gradient(90deg, transparent, ${P.accentOrange}, transparent)`,
+          marginBottom: 20,
+          opacity: 0.7,
+        }}
+      />
+      <div
+        style={{
+          color: P.offWhiteDim,
+          fontSize: 11,
+          fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+          letterSpacing: "0.2em",
+          textTransform: "uppercase" as const,
+        }}
+      >
+        Build beautiful animations.
+      </div>
+    </div>
+  );
+};
+
+// ─── VIGNETTE FLASH (SCENE TRANSITION) ──────────────────────────────────────
+
+const TransitionFlash: React.FC<{ atFrame: number; color?: string }> = ({
+  atFrame,
+  color = "#ffffff",
+}) => {
+  const frame = useCurrentFrame();
+  const opacity = interpolate(
+    frame,
+    [atFrame, atFrame + 3, atFrame + 18],
+    [0, 0.22, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+  );
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        background: color,
         opacity,
-        transform: `translate(-50%, -50%) rotate(${angle}deg)`,
         pointerEvents: "none",
       }}
     />
   );
 };
 
-// ─── SCENES ───────────────────────────────────────────────────────────────────
-
-const SceneHook: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const spr = spring({ frame, fps, config: { damping: 12 } });
-  const scale = interpolate(spr, [0, 1], [0.8, 1]);
-  const rotX = interpolate(frame, [0, 90], [5, 0]);
-
-  return (
-    <AbsoluteFill style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <CinematicBackground />
-      <div style={{ transform: `perspective(1000px) scale(${scale}) rotateX(${rotX}deg)`, opacity: fadeIn(frame, 0, 20) }}>
-        <IDEWindow style={{ width: 500, height: 300 }}>
-          <TypingCode 
-            startFrame={10} 
-            code={[
-              "// The future of web",
-              "const agency = {",
-              "  mission: 'Build Art',",
-              "  status: 'Ready'",
-              "};"
-            ]} 
-          />
-        </IDEWindow>
-      </div>
-      <div style={{ position: "absolute", bottom: 120, textAlign: "center", opacity: fadeIn(frame, 40, 20) }}>
-        <div style={{ fontSize: 80, fontWeight: 900, color: "white", letterSpacing: -4 }}>STOP</div>
-        <div style={{ fontSize: 20, color: "#6c63ff", letterSpacing: 8 }}>SCROLLING</div>
-      </div>
-    </AbsoluteFill>
-  );
-};
-
-const SceneIntro: React.FC = () => {
-  const frame = useCurrentFrame();
-  const zoom = interpolate(frame, [0, 200], [1, 1.05]);
-  return (
-    <AbsoluteFill style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <CinematicBackground />
-      <div style={{ transform: `scale(${zoom})`, textAlign: "center" }}>
-        <div style={{ fontSize: 16, color: "#6c63ff", letterSpacing: 6, marginBottom: 20, opacity: fadeIn(frame, 10, 20) }}>✦ WEB AGENCY ✦</div>
-        <div style={{ fontSize: 100, fontWeight: 900, color: "white", lineHeight: 0.9 }}>
-          <KineticText text="WE BUILD" startFrame={20} />
-          <br />
-          <KineticText 
-            text="WEBSITES" 
-            startFrame={40} 
-            style={{ background: "linear-gradient(135deg, #6c63ff, #ff6b6b)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }} 
-          />
-        </div>
-      </div>
-    </AbsoluteFill>
-  );
-};
-
-const SceneCTA: React.FC = () => {
-  const frame = useCurrentFrame();
-  const spr = spring({ frame, fps: 60 });
-  return (
-    <AbsoluteFill style={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
-      <CinematicBackground />
-      <div style={{ textAlign: "center", transform: `scale(${interpolate(spr, [0, 1], [0.9, 1])})`, opacity: spr }}>
-        <div style={{ fontSize: 20, color: "#6c63ff", letterSpacing: 6, marginBottom: 20 }}>✦ LIMITED SPOTS ✦</div>
-        <div style={{ fontSize: 90, fontWeight: 900, color: "white", marginBottom: 40 }}>GET STARTED</div>
-        <div style={{ padding: "20px 50px", background: "linear-gradient(135deg, #6c63ff, #ff6b6b)", borderRadius: 50, color: "white", fontWeight: 700, fontSize: 22 }}>
-          Book a Free Call →
-        </div>
-      </div>
-    </AbsoluteFill>
-  );
-};
-
-const Transition: React.FC<{ color?: string }> = ({ color = "#6c63ff" }) => {
-  const frame = useCurrentFrame();
-  const progress = interpolate(frame, [0, 30], [0, 100], { easing: Easing.inOut(Easing.cubic) });
-  return (
-    <AbsoluteFill style={{ zIndex: 100, pointerEvents: "none" }}>
-      <div style={{ position: "absolute", top: 0, left: 0, width: `${progress}%`, height: "100%", background: color, boxShadow: `0 0 40px ${color}` }} />
-    </AbsoluteFill>
-  );
-};
-
-const ProgressBar: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { durationInFrames } = useVideoConfig();
-  const pct = (frame / durationInFrames) * 100;
-  return (
-    <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 4, background: "rgba(255,255,255,0.1)" }}>
-      <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg, #6c63ff, #ff6b6b)" }} />
-    </div>
-  );
-};
-
-// ─── ROOT COMPOSITION ─────────────────────────────────────────────────────────
+// ─── ROOT COMPOSITION ────────────────────────────────────────────────────────
 
 export const WebAgencyIntro: React.FC = () => {
+  const frame = useCurrentFrame();
+  const { width, height } = useVideoConfig();
+
+  const zoom = getZoom(frame);
+
+  // Zoom origin: center of screen
+  const zoomOriginX = 50;
+  const zoomOriginY = 52;
+
+  // Shake intensity increases slightly during zoom transitions
+  const isZooming =
+    (frame >= T.zoom1Start && frame < T.zoom1End + 20) ||
+    (frame >= T.zoom2Start && frame < T.zoom2End + 20);
+  const shakeIntensity = isZooming ? 3.5 : 1.2;
+
+  // Motion blur during fast zoom
+  const motionBlur = isZooming
+    ? interpolate(
+        frame,
+        [T.zoom1Start, T.zoom1Start + 8, T.zoom1End],
+        [0, 0.8, 0],
+        { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+      )
+    : 0;
+
   return (
-    <AbsoluteFill style={{ backgroundColor: "#020617", overflow: "hidden" }}>
-      <Sequence from={0} durationInFrames={90}>
-        <SceneHook />
-      </Sequence>
-      <Sequence from={80} durationInFrames={30}>
-        <Transition color="#6c63ff" />
-      </Sequence>
-      <Sequence from={90} durationInFrames={200}>
-        <SceneIntro />
-      </Sequence>
-      <Sequence from={280} durationInFrames={30}>
-        <Transition color="#ff6b6b" />
-      </Sequence>
-      <Sequence from={290} durationInFrames={610}>
-        <SceneCTA />
-      </Sequence>
-      <ProgressBar />
+    <AbsoluteFill style={{ background: P.bgDeep }}>
+      <CinematicFrame
+        zoom={zoom}
+        zoomOriginX={zoomOriginX}
+        zoomOriginY={zoomOriginY}
+        shakeIntensity={shakeIntensity}
+        motionBlur={motionBlur}
+      >
+        {/* Layer 1: textured background */}
+        <Background />
+
+        {/* Layer 2: code editor (enters at editorEnter) */}
+        <CodeEditor
+          enterFrame={T.editorEnter}
+          compileFrame={T.compileStart}
+        />
+
+        {/* Layer 3: kinetic title (fades out as editor enters) */}
+        <KineticTitle startFrame={T.titleIn} />
+
+        {/* Layer 4: overlay chrome */}
+        <Overlay startFrame={T.titleHold} />
+
+        {/* Layer 5: outro tag */}
+        <Outro />
+      </CinematicFrame>
+
+      {/* Transition flashes sit outside CinematicFrame (no shake/zoom) */}
+      <TransitionFlash atFrame={T.zoom1Start} color={P.accent} />
+      <TransitionFlash atFrame={T.zoom2Start} color={P.accent} />
+      <TransitionFlash atFrame={T.zoomOutStart} color="#ffffff" />
+
+      {/* Hard fade-in from black */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "#000",
+          opacity: interpolate(frame, [0, 20], [1, 0], {
+            extrapolateRight: "clamp",
+          }),
+          pointerEvents: "none",
+        }}
+      />
     </AbsoluteFill>
   );
 };

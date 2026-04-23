@@ -1,337 +1,475 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Remotion Cinematic Preview</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Motion Design · Simplicissimus</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --bg: #020617;
-      --slate-900: #0f172a;
-      --accent: #6366f1;
-      --cyan: #06b6d4;
-      --pink: #ec4899;
-      --text: #f8fafc;
-      --text-dim: #94a3b8;
+      --bg:       #0A0E1A;
+      --bg-deep:  #070B14;
+      --accent:   #00D4FF;
+      --orange:   #FF6B35;
+      --off-white:#F0EDE6;
+      --off-dim:  #C8C4BC;
+      --muted:    #3D4560;
+      --muted-l:  #5C6680;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
     body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
+      background: var(--bg-deep);
+      width: 100vw; height: 100vh;
       overflow: hidden;
-      height: 100vh;
-      width: 100vw;
+      font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+      color: var(--off-white);
     }
 
-    /* Background Elements */
-    .grid {
-      position: absolute;
-      inset: 0;
-      background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.03) 1px, transparent 0);
-      background-size: 40px 40px;
-      z-index: 0;
+    /* ── CINEMATIC FRAME ─────────────────────────────── */
+    #cf {
+      position: absolute; inset: 0;
+      transform-origin: 50% 52%;
+      animation: shake 3.2s ease-in-out infinite;
     }
-    .glow {
-      position: absolute;
-      width: 60vw;
-      height: 60vw;
-      background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
-      border-radius: 50%;
-      filter: blur(80px);
-      z-index: 0;
-      animation: float 20s infinite alternate ease-in-out;
-    }
-
-    @keyframes float {
-      from { transform: translate(-10%, -10%); }
-      to { transform: translate(20%, 20%); }
+    @keyframes shake {
+      0%   { transform: scale(var(--z,1)) translate(0px,0px) rotate(0deg); }
+      12%  { transform: scale(var(--z,1)) translate(-1.3px,.8px) rotate(.03deg); }
+      24%  { transform: scale(var(--z,1)) translate(.9px,-1.2px) rotate(-.02deg); }
+      36%  { transform: scale(var(--z,1)) translate(1.5px,.4px) rotate(.04deg); }
+      48%  { transform: scale(var(--z,1)) translate(-.7px,1.4px) rotate(-.03deg); }
+      60%  { transform: scale(var(--z,1)) translate(1.2px,-.9px) rotate(.02deg); }
+      72%  { transform: scale(var(--z,1)) translate(-1.6px,.5px) rotate(-.04deg); }
+      84%  { transform: scale(var(--z,1)) translate(.8px,1.3px) rotate(.03deg); }
+      100% { transform: scale(var(--z,1)) translate(0px,0px) rotate(0deg); }
     }
 
-    /* Scene Management */
-    .scene {
-      position: absolute;
-      inset: 0;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 10;
-      perspective: 1000px;
+    /* ── BACKGROUND ──────────────────────────────────── */
+    #bg { position:absolute; inset:0; opacity:0; transition: opacity .8s ease; }
+    #bg.on { opacity:1; }
+    .bg-base    { position:absolute; inset:0; background: radial-gradient(ellipse at 30% 28%, #13192E 0%, #0A0E1A 45%, #070B14 100%); }
+    .bg-blue    { position:absolute; inset:0; background: radial-gradient(ellipse at 82% 12%, rgba(0,212,255,.07) 0%, transparent 42%); }
+    .bg-amber   { position:absolute; inset:0; background: radial-gradient(ellipse at 12% 88%, rgba(255,107,53,.045) 0%, transparent 38%); }
+    .bg-vignette{ position:absolute; inset:0; background: radial-gradient(ellipse at 50% 50%, transparent 32%, rgba(0,0,0,.75) 100%); }
+    .bg-scan    { position:absolute; inset:0; background-image: repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(0,0,0,.022) 3px, rgba(0,0,0,.022) 4px); }
+    .bg-grain   { position:absolute; inset:0; width:100%; height:100%; }
+
+    /* ── KINETIC TITLE ───────────────────────────────── */
+    #title {
+      position:absolute; inset:0;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:4px; pointer-events:none;
+      transition: opacity .8s ease;
     }
-    .scene.active {
-      display: flex;
-      opacity: 1;
+    #title.out { opacity:0; }
+    .t-line { display:flex; justify-content:center; overflow:hidden; }
+    .t-ch {
+      display:inline-block;
+      font-size: min(9vw, 148px);
+      font-weight:900;
+      font-family:'Helvetica Neue', Arial, sans-serif;
+      letter-spacing:-.03em; line-height:1;
+      color: var(--off-white);
+      opacity:0;
+      transform: translateY(80px) scale(.6);
+      transition: opacity .4s ease, transform .4s cubic-bezier(.16,1,.3,1);
+    }
+    .t-ch.on { opacity:1; transform:translateY(0) scale(1); }
+    .t-sub {
+      margin-top:24px;
+      color: var(--accent); font-size:13px;
+      letter-spacing:.35em; text-transform:uppercase;
+      opacity:0; transform:translateY(20px);
+      transition: opacity .6s ease, transform .6s cubic-bezier(.16,1,.3,1);
+    }
+    .t-sub.on { opacity:1; transform:translateY(0); }
+    .t-rule {
+      width:0; height:1.5px; margin-top:16px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity:.6; transition: width .8s cubic-bezier(.16,1,.3,1);
+    }
+    .t-rule.on { width:180px; }
+
+    /* ── EDITOR ──────────────────────────────────────── */
+    #editor {
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      opacity:0; transform:translateY(120px); pointer-events:none;
+      transition: opacity .5s ease, transform .8s cubic-bezier(.16,1,.3,1);
+    }
+    #editor.on { opacity:1; transform:translateY(0); }
+
+    .win {
+      width: min(1100px, 62vw); height: min(640px, 68vh);
+      border-radius:12px; overflow:hidden;
+      background: rgba(10,14,26,.82);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(240,237,230,.07);
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,.4),
+        0 32px 64px rgba(0,0,0,.6),
+        0 0 80px rgba(0,212,255,.03),
+        inset 0 0 60px rgba(0,212,255,.015),
+        inset 0 1px 0 rgba(240,237,230,.08);
+      display:flex; flex-direction:column;
+      transition: box-shadow .3s ease;
+    }
+    .win.compiling {
+      animation: glow-pulse .8s ease-in-out infinite;
+    }
+    @keyframes glow-pulse {
+      0%,100%{ box-shadow: 0 0 0 1px rgba(0,0,0,.4), 0 32px 64px rgba(0,0,0,.6), 0 0  80px rgba(0,212,255,.10), inset 0 0  60px rgba(0,212,255,.03), inset 0 1px 0 rgba(240,237,230,.08); }
+      50%    { box-shadow: 0 0 0 1px rgba(0,0,0,.4), 0 32px 64px rgba(0,0,0,.6), 0 0 140px rgba(0,212,255,.22), inset 0 0  90px rgba(0,212,255,.06), inset 0 1px 0 rgba(240,237,230,.08); }
     }
 
-    /* IDE Window */
-    .ide-window {
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(16px);
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
-      width: 600px;
-      max-width: 90vw;
-      overflow: hidden;
-      transform: rotateX(5deg);
-      transition: transform 0.5s ease;
+    .titlebar {
+      display:flex; align-items:center; gap:8px;
+      padding:12px 16px;
+      border-bottom:1px solid rgba(240,237,230,.05);
+      flex-shrink:0;
     }
-    .ide-header {
-      height: 36px;
-      background: rgba(255, 255, 255, 0.05);
-      display: flex;
-      align-items: center;
-      padding: 0 14px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    .dots { display: flex; gap: 8px; }
-    .dot { width: 10px; height: 10px; border-radius: 50%; }
-    .dot.red { background: #ff5f57; }
-    .dot.yellow { background: #ffbd2e; }
-    .dot.green { background: #28ca41; }
-    .ide-title {
-      flex: 1;
-      text-align: center;
-      font-size: 12px;
-      color: var(--text-dim);
-      font-family: 'JetBrains Mono', monospace;
-      margin-right: 30px;
-    }
-    .ide-content {
-      padding: 24px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 16px;
-      line-height: 1.6;
-      min-height: 200px;
-    }
-    .code-line { display: flex; gap: 16px; }
-    .line-num { color: rgba(255,255,255,0.15); width: 20px; text-align: right; }
-    .code-text { color: var(--text); white-space: pre; }
-    .keyword { color: #c084fc; }
-    .string { color: #38bdf8; }
-    .cursor {
-      display: inline-block;
-      width: 8px;
-      height: 18px;
-      background: var(--cyan);
-      vertical-align: middle;
-      margin-left: 2px;
-      animation: blink 1s infinite;
-    }
-    @keyframes blink { 50% { opacity: 0; } }
+    .tl { width:11px; height:11px; border-radius:50%; opacity:.7; }
+    .tl-c { background: var(--muted-l); }
+    .tl-m { background: #FFB86C; }
+    .tl-x { background: #50FA7B; }
+    .fname { margin-left:12px; color:var(--muted-l); font-size:12px; letter-spacing:.06em; }
+    .flang { margin-left:auto; color:var(--muted); font-size:11px; }
 
-    /* Typography */
-    h1 {
-      font-size: clamp(60px, 8vw, 120px);
-      font-weight: 900;
-      letter-spacing: -4px;
-      line-height: 0.9;
-      margin-top: 40px;
-      text-align: center;
+    .body {
+      flex:1; overflow:hidden; display:flex;
+      font-size:13.5px; line-height:1.7;
     }
-    .gradient-text {
-      background: linear-gradient(135deg, var(--accent), var(--pink));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .lnums {
+      width:52px; flex-shrink:0; padding:16px 0;
+      text-align:right; color:var(--muted); font-size:12px;
+      border-right:1px solid rgba(240,237,230,.04);
+      user-select:none;
     }
-    .label {
-      font-size: 14px;
-      letter-spacing: 6px;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 10px;
-      font-weight: 700;
+    .ln {
+      padding:0 12px 0 0; opacity:0;
+      transition: opacity .2s, color .2s;
     }
+    .ln.on  { opacity:.45; }
+    .ln.act { opacity:1; color:var(--accent); }
+    .code-area { flex:1; padding:16px 20px; overflow-y:hidden; }
+    .cl { min-height:1.7em; white-space:pre; }
 
-    /* Transition Overlay */
-    .transition-overlay {
-      position: absolute;
-      inset: 0;
-      background: var(--accent);
-      z-index: 100;
-      transform: translateX(-100%);
-      pointer-events: none;
+    .caret {
+      display:inline-block; width:2px; height:1.1em;
+      background:var(--accent); vertical-align:text-bottom;
+      margin-left:1px; box-shadow:0 0 6px var(--accent);
+      animation: blink .6s step-start infinite;
     }
-    .transition-active {
-      animation: slide 0.8s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+    @keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:.15} }
+
+    .statusbar {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:5px 16px; border-top:1px solid rgba(240,237,230,.06);
+      font-size:11px; color:var(--muted-l); letter-spacing:.04em;
+      flex-shrink:0;
     }
-    @keyframes slide {
-      0% { transform: translateX(-100%); }
-      50% { transform: translateX(0); }
-      100% { transform: translateX(100%); }
+    .s-ok  { color:#50FA7B; }
+    .s-cmp { color:var(--orange); }
+
+    /* ── OVERLAY CHROME ──────────────────────────────── */
+    .corner {
+      position:absolute; width:0; height:0; opacity:0;
+      transition: width .4s cubic-bezier(.16,1,.3,1), height .4s cubic-bezier(.16,1,.3,1), opacity .4s ease;
+    }
+    .corner.on { width:18px; height:18px; opacity:.45; }
+    .c-tl{ top:32px;    left:32px;  border-top:1.5px solid var(--accent); border-left:1.5px solid var(--accent); }
+    .c-tr{ top:32px;    right:32px; border-top:1.5px solid var(--accent); border-right:1.5px solid var(--accent); }
+    .c-bl{ bottom:32px; left:32px;  border-bottom:1.5px solid var(--accent); border-left:1.5px solid var(--accent); }
+    .c-br{ bottom:32px; right:32px; border-bottom:1.5px solid var(--accent); border-right:1.5px solid var(--accent); }
+
+    .flabel {
+      position:absolute; font-size:10.5px;
+      letter-spacing:.1em; text-transform:uppercase; color:var(--muted-l);
+      opacity:0; transform:translateY(12px);
+      transition: opacity .5s ease, transform .5s cubic-bezier(.16,1,.3,1);
+    }
+    .flabel.on  { opacity:1; transform:translateY(0); }
+    .flabel.acc { color:var(--accent); }
+
+    .grule {
+      position:absolute; left:0; right:0; height:1px;
+      background: linear-gradient(90deg, transparent, var(--accent) 30%, var(--orange) 70%, transparent);
+      opacity:0; transform:scaleX(0); transform-origin:left center;
+      transition: opacity .4s ease, transform .8s cubic-bezier(.16,1,.3,1);
+    }
+    .grule.on { opacity:.18; transform:scaleX(1); }
+
+    #fcounter {
+      position:absolute; bottom:32px; right:60px;
+      font-size:10px; color:var(--muted); letter-spacing:.12em; opacity:.35;
     }
 
-    /* Progress Bar */
-    .progress-container {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: rgba(255,255,255,0.1);
-      z-index: 110;
+    /* ── OUTRO ───────────────────────────────────────── */
+    #outro {
+      position:absolute; inset:0; pointer-events:none;
+      display:flex; flex-direction:column; align-items:center;
+      justify-content:flex-end; padding-bottom:72px;
+      opacity:0; transition: opacity .8s ease;
     }
-    .progress-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--accent), var(--pink));
-      box-shadow: 0 0 10px var(--accent);
+    #outro.on { opacity:1; }
+    .o-rule {
+      width:0; height:1px; margin-bottom:20px;
+      background: linear-gradient(90deg, transparent, var(--orange), transparent);
+      opacity:.7; transition: width .8s cubic-bezier(.16,1,.3,1);
     }
+    .o-rule.on { width:320px; }
+    .o-text { color:var(--off-dim); font-size:11px; letter-spacing:.2em; text-transform:uppercase; }
 
-    /* CTA Button */
-    .cta-btn {
-      margin-top: 40px;
-      padding: 18px 48px;
-      background: linear-gradient(135deg, var(--accent), var(--pink));
-      border-radius: 50px;
-      font-weight: 700;
-      font-size: 20px;
-      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
-      cursor: pointer;
-      transition: transform 0.3s ease;
+    /* ── FLASH / FADE ────────────────────────────────── */
+    .flash { position:absolute; inset:0; opacity:0; pointer-events:none; }
+    .flash.fire { animation: flash-anim .35s ease-out forwards; }
+    @keyframes flash-anim { 0%{opacity:0} 8%{opacity:.22} 100%{opacity:0} }
+
+    #blackout {
+      position:absolute; inset:0;
+      background:#000; pointer-events:none;
+      transition: opacity .35s ease;
     }
-    .cta-btn:hover { transform: scale(1.05); }
   </style>
 </head>
 <body>
-  <div class="grid"></div>
-  <div class="glow" style="top: 10%; left: 10%;"></div>
-  <div class="glow" style="bottom: 10%; right: 10%; background: radial-gradient(circle, rgba(236, 72, 153, 0.05) 0%, transparent 70%);"></div>
 
-  <!-- Scene 1: Hook -->
-  <div class="scene" id="scene1">
-    <div class="ide-window">
-      <div class="ide-header">
-        <div class="dots">
-          <div class="dot red"></div>
-          <div class="dot yellow"></div>
-          <div class="dot green"></div>
-        </div>
-        <div class="ide-title">index.ts</div>
+<div id="cf">
+
+  <!-- Background -->
+  <div id="bg">
+    <div class="bg-base"></div>
+    <div class="bg-blue"></div>
+    <div class="bg-amber"></div>
+    <svg class="bg-grain" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="grain" x="0%" y="0%" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.68" numOctaves="4" seed="7" stitchTiles="stitch"/>
+          <feColorMatrix type="saturate" values="0"/>
+        </filter>
+      </defs>
+      <rect width="100%" height="100%" filter="url(#grain)" opacity="0.055" fill="white"/>
+    </svg>
+    <div class="bg-vignette"></div>
+    <div class="bg-scan"></div>
+  </div>
+
+  <!-- Overlay chrome -->
+  <div class="corner c-tl" id="c-tl"></div>
+  <div class="corner c-tr" id="c-tr"></div>
+  <div class="corner c-bl" id="c-bl"></div>
+  <div class="corner c-br" id="c-br"></div>
+  <div class="flabel"     id="lbl-l"  style="top:38px;left:64px">© Simplicissimus · Motion</div>
+  <div class="flabel acc" id="lbl-r"  style="top:38px;right:64px">Remotion 4.0</div>
+  <div class="flabel"     id="lbl-b"  style="bottom:38px;left:64px">1920 × 1080 · 60fps</div>
+  <div class="grule" id="gr-t" style="top:96px"></div>
+  <div class="grule" id="gr-b" style="bottom:96px"></div>
+  <div id="fcounter">0000</div>
+
+  <!-- Kinetic title -->
+  <div id="title">
+    <div class="t-line" id="tl1"></div>
+    <div class="t-line" id="tl2"></div>
+    <div class="t-sub"  id="tsub">by Simplicissimus</div>
+    <div class="t-rule" id="trule"></div>
+  </div>
+
+  <!-- Code editor -->
+  <div id="editor">
+    <div class="win" id="win">
+      <div class="titlebar">
+        <div class="tl tl-c"></div>
+        <div class="tl tl-m"></div>
+        <div class="tl tl-x"></div>
+        <span class="fname">scene-transition.ts</span>
+        <span class="flang">TypeScript React</span>
       </div>
-      <div class="ide-content" id="typing-area"></div>
+      <div class="body">
+        <div class="lnums" id="lnums"></div>
+        <div class="code-area" id="carea"></div>
+      </div>
+      <div class="statusbar">
+        <span id="slang" class="s-ok">✓ TypeScript</span>
+        <span id="spos">Ln 1, Col 1</span>
+        <span>UTF-8</span>
+        <span id="ssize">0.4 KB</span>
+      </div>
     </div>
-    <div style="margin-top: 60px; text-align: center;">
-      <h1 style="margin:0">STOP</h1>
-      <div class="label" style="margin-top:10px">SCROLLING</div>
-    </div>
   </div>
 
-  <!-- Scene 2: Intro -->
-  <div class="scene" id="scene2">
-    <div class="label">✦ WEB AGENCY ✦</div>
-    <h1>WE BUILD<br><span class="gradient-text">WEBSITES</span></h1>
+  <!-- Outro -->
+  <div id="outro">
+    <div class="o-rule" id="orule"></div>
+    <div class="o-text">Build beautiful animations.</div>
   </div>
 
-  <!-- Scene 3: CTA -->
-  <div class="scene" id="scene3">
-    <div class="label">✦ LIMITED SPOTS ✦</div>
-    <h1 style="font-size: 80px;">GET STARTED</h1>
-    <div class="cta-btn">Book a Free Call →</div>
-  </div>
+</div><!-- /cf -->
 
-  <div class="transition-overlay" id="overlay"></div>
-  <div class="progress-container">
-    <div class="progress-bar" id="progress"></div>
-  </div>
+<div class="flash" id="fl1" style="background:var(--accent)"></div>
+<div class="flash" id="fl2" style="background:#fff"></div>
+<div id="blackout"></div>
 
-  <script>
-    const scenes = ['scene1', 'scene2', 'scene3'];
-    let currentScene = 0;
-    const overlay = document.getElementById('overlay');
-    const progressBar = document.getElementById('progress');
-    const TOTAL_TIME = 15000; // 15 seconds
+<script>
+const C={K:'#FF79C6',T:'#8BE9FD',S:'#F1FA8C',N:'#BD93F9',F:'#50FA7B',CO:'#5C6680',D:'#F8F8F2',O:'#FF79C6',B:'#FFB86C'};
 
-    function showScene(index) {
-      scenes.forEach((id, i) => {
-        const el = document.getElementById(id);
-        if (i === index) {
-          el.classList.add('active');
-          setTimeout(() => el.style.opacity = '1', 50);
-        } else {
-          el.style.opacity = '0';
-          setTimeout(() => el.classList.remove('active'), 800);
-        }
-      });
+const CODE=[
+  [[`import`,C.K],[` { spring, interpolate, Easing } `,C.D],[`from`,C.K],[` `,C.D],[`'remotion'`,C.S],[`;`,C.D]],
+  [],
+  [[`interface`,C.K],[` `,C.D],[`SpringConfig`,C.T],[` {`,C.B]],
+  [[`  damping`,C.D],[`: `,C.O],[`number`,C.T],[`;`,C.D]],
+  [[`  stiffness`,C.D],[`: `,C.O],[`number`,C.T],[`;`,C.D]],
+  [[`  mass`,C.D],[`?: `,C.O],[`number`,C.T],[`;`,C.D]],
+  [[`}`,C.B]],
+  [],
+  [[`const`,C.K],[` EXPO_OUT`,C.D],[`: `,C.O],[`SpringConfig`,C.T],[` = {`,C.B]],
+  [[`  damping`,C.D],[`: `,C.O],[`100`,C.N],[`,`,C.D]],
+  [[`  stiffness`,C.D],[`: `,C.O],[`200`,C.N],[`,`,C.D]],
+  [[`  mass`,C.D],[`: `,C.O],[`0.5`,C.N],[`,`,C.D]],
+  [[`};`,C.B]],
+  [],
+  [[`// Expo-out — starts fast, lands soft`,C.CO]],
+  [[`export const`,C.K],[` `,C.D],[`useSceneTransition`,C.F],[` = (`,C.B]],
+  [[`  frame`,C.D],[`: `,C.O],[`number`,C.T],[`,`,C.D]],
+  [[`  delay`,C.D],[`: `,C.O],[`number`,C.T],[` = `,C.O],[`0`,C.N]],
+  [[`)`,C.B],[` => {`,C.D]],
+  [[`  const`,C.K],[` progress `,C.D],[`=`,C.O],[` spring`,C.F],[`({`,C.B]],
+  [[`    frame`,C.D],[`: frame `,C.D],[`-`,C.O],[` delay,`,C.D]],
+  [[`    fps`,C.D],[`: `,C.O],[`60`,C.N],[`,`,C.D]],
+  [[`    config`,C.D],[`: EXPO_OUT,`,C.D]],
+  [[`  });`,C.B]],
+  [],
+  [[`  return`,C.K],[` {`,C.B]],
+  [[`    opacity`,C.D],[`: progress,`,C.D]],
+  [[`    transform`,C.D],[`: `,C.O],[`\`scale(\${progress})\``,C.S],[`,`,C.D]],
+  [[`  };`,C.B]],
+  [[`};`,C.D]],
+];
+
+const lt = tokens => tokens.map(([t])=>t).join('');
+
+// Build DOM
+const lnums = document.getElementById('lnums');
+const carea = document.getElementById('carea');
+CODE.forEach((_,i)=>{
+  const ln=document.createElement('div'); ln.className='ln'; ln.id=`ln${i}`; ln.textContent=i+1; lnums.appendChild(ln);
+  const cl=document.createElement('div'); cl.className='cl'; cl.id=`cl${i}`; carea.appendChild(cl);
+});
+['MOTION','DESIGN'].forEach((w,wi)=>{
+  const el=document.getElementById(`tl${wi+1}`);
+  w.split('').forEach((ch,ci)=>{
+    const s=document.createElement('span'); s.className='t-ch'; s.id=`tc${wi}${ci}`; s.textContent=ch; el.appendChild(s);
+  });
+});
+
+// Zoom
+const zoomState={v:1};
+function setZoom(to, dur=400){
+  const from=zoomState.v, t0=performance.now();
+  (function step(now){
+    const t=Math.min((now-t0)/dur,1);
+    const e=t===1?1:1-Math.pow(2,-10*t);
+    zoomState.v=from+(to-from)*e;
+    document.getElementById('cf').style.setProperty('--z',zoomState.v);
+    if(t<1) requestAnimationFrame(step);
+  })(performance.now());
+}
+function flash(id){
+  const el=document.getElementById(id);
+  el.classList.remove('fire'); void el.offsetWidth; el.classList.add('fire');
+}
+function on(id,cls='on'){ document.getElementById(id).classList.add(cls); }
+function cl$(id){ return document.getElementById(id); }
+
+function renderLine(i,chars){
+  const tokens=CODE[i];
+  const el=cl$(`cl${i}`);
+  if(!tokens||!tokens.length){el.innerHTML='';return;}
+  let html='',seen=0;
+  for(const[text,color] of tokens){
+    if(seen>=chars)break;
+    const vis=text.slice(0,chars-seen).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    html+=`<span style="color:${color}">${vis}</span>`;
+    seen+=text.length;
+  }
+  el.innerHTML=html;
+}
+
+// Main loop
+let fc=0, tl=-1, tc=0, lastNow=null;
+const FPS=60, CPT=3;
+
+function tick(now){
+  if(!lastNow) lastNow=now;
+  fc+=Math.max(1,Math.round((now-lastNow)/(1000/FPS)));
+  lastNow=now;
+  const f=fc;
+
+  cl$('fcounter').textContent=String(Math.min(f,9999)).padStart(4,'0');
+
+  if(f===1)  cl$('blackout').style.opacity='0';
+  if(f>=1)   on('bg');
+
+  // Kinetic title
+  if(f>=5)  'MOTION'.split('').forEach((_,i)=>{ if(f>=5+i*4) on(`tc0${i}`); });
+  if(f>=20) 'DESIGN'.split('').forEach((_,i)=>{ if(f>=20+i*4) on(`tc1${i}`); });
+  if(f===60){ on('tsub'); on('trule'); }
+
+  // Overlay
+  if(f===90){ on('gr-t'); on('gr-b'); }
+  if(f===100){ ['c-tl','c-tr','c-bl','c-br'].forEach(id=>on(id)); }
+  if(f===105) on('lbl-l');
+  if(f===115) on('lbl-r');
+  if(f===125) on('lbl-b');
+
+  // Editor enters
+  if(f===80) on('editor');
+
+  // Title fades
+  if(f===160) cl$('title').classList.add('out');
+
+  // Typewriting
+  if(f>=100 && tl<CODE.length){
+    if(tl===-1){tl=0;tc=0;}
+    const max=lt(CODE[tl]).length;
+    tc+=CPT;
+    if(tc>max+5){
+      renderLine(tl,max);
+      cl$(`ln${tl}`).classList.remove('act');
+      tl++; tc=0;
+      if(tl<CODE.length){ cl$(`ln${tl}`).classList.add('ln','on','act'); }
+    } else {
+      cl$(`ln${tl}`).classList.add('on','act');
+      renderLine(tl,Math.min(tc,max));
+      // add caret
+      const prev=cl$(`cl${tl}`).querySelector('.caret');
+      if(prev) prev.remove();
+      if(tc<=max){const c=document.createElement('span');c.className='caret';cl$(`cl${tl}`).appendChild(c);}
     }
+    cl$('spos').textContent=`Ln ${tl+1}, Col ${(tc%40)+1}`;
+    cl$('ssize').textContent=`${(tl*.18+.4).toFixed(1)} KB`;
+  }
 
-    function triggerTransition(callback) {
-      overlay.classList.add('transition-active');
-      setTimeout(() => {
-        callback();
-      }, 400);
-      setTimeout(() => {
-        overlay.classList.remove('transition-active');
-      }, 800);
-    }
+  // Step zooms
+  if(f===300){ flash('fl1'); setZoom(1.32,300); }
+  if(f===490){ flash('fl1'); setZoom(1.64,300); }
+  if(f===680){ flash('fl2'); setZoom(1.0,400); }
 
-    // Typing Effect
-    const codeLines = [
-      { text: "// The future of web", type: "comment" },
-      { text: "const agency = {", type: "code" },
-      { text: "  mission: 'Build Art',", type: "code" },
-      { text: "  status: 'Ready'", type: "code" },
-      { text: "};", type: "code" }
-    ];
+  // Compiling
+  if(f===580){ cl$('win').classList.add('compiling'); }
+  if(f>=580&&f<670){ const d='.'.repeat((Math.floor(f/12)%3)+1); const sl=cl$('slang'); sl.className='s-cmp'; sl.textContent=`⬡ Compiling${d}`; }
+  if(f===670){ cl$('win').classList.remove('compiling'); const sl=cl$('slang'); sl.className='s-ok'; sl.textContent='✓ TypeScript'; }
 
-    async function typeCode() {
-      const area = document.getElementById('typing-area');
-      area.innerHTML = '';
-      
-      for (let i = 0; i < codeLines.length; i++) {
-        const lineDiv = document.createElement('div');
-        lineDiv.className = 'code-line';
-        lineDiv.innerHTML = `<span class="line-num">${i+1}</span><span class="code-text"></span>`;
-        area.appendChild(lineDiv);
-        const textSpan = lineDiv.querySelector('.code-text');
-        
-        const line = codeLines[i].text;
-        for (let char of line) {
-          textSpan.textContent += char;
-          await new Promise(r => setTimeout(r, 40));
-        }
-        textSpan.innerHTML = highlight(textSpan.textContent);
-      }
-      area.innerHTML += '<span class="cursor"></span>';
-    }
+  // Outro
+  if(f===760){ on('outro'); on('orule'); }
 
-    function highlight(text) {
-      return text
-        .replace(/\/\/.*/, '<span style="color: #64748b">$&</span>')
-        .replace(/\b(const|export|import|from|return)\b/g, '<span class="keyword">$1</span>')
-        .replace(/'[^']*'/g, '<span class="string">$&</span>');
-    }
+  // End fade
+  if(f>=860){ cl$('blackout').style.opacity=String(Math.min((f-860)/40,1)); }
 
-    // Timeline
-    showScene(0);
-    typeCode();
+  if(f<960) requestAnimationFrame(tick);
+  else setTimeout(()=>location.reload(),800);
+}
 
-    setTimeout(() => {
-      triggerTransition(() => showScene(1));
-    }, 4000);
-
-    setTimeout(() => {
-      triggerTransition(() => showScene(2));
-    }, 9000);
-
-    // Progress Bar
-    const start = Date.now();
-    const timer = setInterval(() => {
-      const elapsed = Date.now() - start;
-      const p = (elapsed / TOTAL_TIME) * 100;
-      progressBar.style.width = Math.min(p, 100) + '%';
-      if (elapsed >= TOTAL_TIME) {
-        clearInterval(timer);
-        // Restart or Loop
-        setTimeout(() => location.reload(), 2000);
-      }
-    }, 16);
-  </script>
+requestAnimationFrame(tick);
+</script>
 </body>
 </html>
