@@ -12,6 +12,7 @@ import { Background } from "./components/Background";
 import { CodeEditor } from "./components/CodeEditor";
 import { Overlay } from "./components/Overlay";
 import { P } from "./components/palette";
+import { AnimatedCursor } from "./components/AnimatedCursor";
 
 // ─── TIMING CONSTANTS ────────────────────────────────────────────────────────
 
@@ -339,6 +340,40 @@ export const WebAgencyIntro: React.FC = () => {
           pointerEvents: "none",
         }}
       />
+
+      {/*
+        ── ANIMATED CURSOR DEMO ─────────────────────────────────────────────
+        Remove the block comment markers to activate.
+
+        Waypoint coordinates (x, y) = pixel position on the 1920×1080 canvas.
+        The cursor tip (hot spot) lands exactly on that point.
+
+        Adjust frame numbers + coordinates to match your actual UI layout.
+        Wrap in <Sequence from={…} durationInFrames={…}> if you only want
+        the cursor visible during a specific scene.
+
+        <AnimatedCursor
+          size={36}
+          color="#FFFFFF"
+          accentColor={P.accent}
+          waypoints={[
+            // Frame 200 – cursor idles near the centre
+            { frame: 200, x: 760, y: 500 },
+
+            // Frame 260 – glides to the "Open" button (bottom of editor)
+            { frame: 260, x: 1140, y: 760, click: true },
+
+            // Frame 330 – moves up to the dropdown that just appeared
+            { frame: 330, x: 960, y: 380 },
+
+            // Frame 400 – clicks the "Confirm" item inside the dropdown
+            { frame: 400, x: 960, y: 440, click: true },
+
+            // Frame 480 – drifts to the cart icon (top-right)
+            { frame: 480, x: 1780, y: 80, click: true },
+          ]}
+        />
+      */}
     </AbsoluteFill>
   );
 };
