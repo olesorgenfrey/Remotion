@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Remotion video project",
   "scripts": {
-    "start": "npx remotion studio",
-    "build": "npx remotion render",
+    "start": "npx remotion studio --port ${PORT:-3000}",
+    "build": "npx remotion render StorefrontVideo",
     "upgrade": "npx remotion upgrade"
   },
   "dependencies": {
