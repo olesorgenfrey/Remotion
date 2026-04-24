@@ -155,13 +155,14 @@ export const SceneHook: React.FC = () => {
         />
       </div>
 
-      {/* Cursor */}
+      {/* Cursor hovers near end of "zweiter Job" — x≈660 = center+120, y≈1060 = line 3 center */}
       <Cursor
         waypoints={[
-          { x: 530, y: 1050 },
-          { x: 545, y: 1060 },
-          { x: 538, y: 1055 },
-        ].map((w, i) => ({ ...w, frame: i * 20 }))}
+          { x: 300, y: 1060, frame: 0  },  // starts left of "zweiter"
+          { x: 660, y: 1060, frame: 20 },  // moves to end of "zweiter Job"
+          { x: 670, y: 1060, frame: 40 },  // tiny drift — stays on word
+          { x: 665, y: 1062, frame: 60 },
+        ]}
         color={C.text}
       />
     </div>

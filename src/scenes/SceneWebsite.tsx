@@ -223,12 +223,26 @@ export const SceneWebsite: React.FC = () => {
         </div>
       </div>
 
+      {/*
+        Browser window: marginTop=180, width=900 centered → left=90
+        Chrome: 40px  Nav: 56px → hero starts at y=276
+        "Jetzt anfragen" CTA in hero: approx x=170 y=530 (within window → abs x=260 y=710)
+        "Projekte ansehen →" button: abs x=470 y=710
+        Scroll gesture: cursor moves downward simulating trackpad scroll
+      */}
       <Cursor
         waypoints={[
-          { x: 450, y: 800, frame: 0 },
-          { x: 450, y: 820, frame: 15 },
-          { x: 450, y: 860, frame: 30 },
-          { x: 450, y: 840, frame: 50 },
+          { x: 260, y: 710, frame: 0  },  // hover "Jetzt anfragen" CTA
+          { x: 260, y: 710, frame: 8  },  // stay
+          { x: 470, y: 710, frame: 18 },  // move to "Projekte ansehen →"
+          { x: 470, y: 680, frame: 28 },  // slight hover drift
+          { x: 470, y: 740, frame: 38 },  // scroll down gesture start
+          { x: 470, y: 820, frame: 50 },  // continue scrolling
+          { x: 470, y: 820, frame: 60 },  // hold
+        ]}
+        clicks={[
+          { frame: 8  },   // click CTA
+          { frame: 18 },   // click Projekte
         ]}
         color={C.text}
       />

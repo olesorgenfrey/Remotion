@@ -200,12 +200,26 @@ export const SceneContact: React.FC = () => {
         Keine langen Wartezeiten. Keine Formulare.
       </div>
 
+      {/*
+        Layout: justifyContent center, padding 0 80px.
+        Content total height ≈ 615px → starts at y=(1920-615)/2=652
+
+        Label: y=652  (+36 margin)
+        Headline (2 lines, 72px): y=688→839  (+52 margin)
+        Icon 1 "Anrufen"  (delay 10): card y=891→995,  circle center x=140 y=943
+        Icon 2 "WhatsApp" (delay 28): card y=1027→1131, circle center x=140 y=1079
+        Icon 3 "E-Mail"   (delay 46): card y=1163→1267, circle center x=140 y=1215
+
+        Cursor clicks the phone icon circle at frame 55.
+      */}
       <Cursor
         waypoints={[
-          { x: 80, y: 900, frame: 0 },
-          { x: 140, y: 1010, frame: 12 },
-          { x: 280, y: 1020, frame: 30 },
-          { x: 200, y: 1020, frame: 55 },
+          { x: 540, y: 700,  frame: 0  },  // above icons, near headline
+          { x: 140, y: 943,  frame: 10 },  // move to Anrufen circle (appears at delay 10)
+          { x: 140, y: 943,  frame: 48 },  // hover, waiting for click frame
+          { x: 140, y: 943,  frame: 55 },  // click phone icon
+          { x: 140, y: 943,  frame: 80 },  // hold after click
+          { x: 140, y: 1079, frame: 100 }, // drift to WhatsApp
         ]}
         clicks={[{ frame: 55, duration: 14 }]}
         color={C.text}

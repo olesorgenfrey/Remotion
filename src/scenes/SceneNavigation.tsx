@@ -236,19 +236,29 @@ export const SceneNavigation: React.FC = () => {
     extrapolateRight: "clamp",
   });
 
-  // Cursor scale for website - nav items are at different pixel positions within the mock
-  // Map nav positions into the full 1080px-wide container
-  const windowLeft = 90; // margin of the browser window inside the scene
-  const windowTop = 260; // vertical position of the window
+  /*
+    Browser window: marginTop=140 (label) + ~30px label height + 24px gap = top ≈ 194px
+    Browser chrome: 38px  →  nav bar starts at y=232
+    Nav bar height: 56px  →  nav center y = 232 + 28 = 260
+
+    Window centered: (1080 - 900) / 2 = 90px left margin
+
+    Absolute cursor positions for each nav item:
+      "Wie es läuft"  → x = 90+188 = 278,  y = 260
+      "Projekte"      → x = 90+340 = 430,  y = 260
+      "Preise"        → x = 90+462 = 552,  y = 260
+      "Jetzt anfragen"→ x = 90+620 = 710,  y = 260  (the CTA button)
+  */
+  const NAV_Y_CENTER = 260; // absolute y of nav bar center in the 1920px canvas
+  const WIN_LEFT     = 90;  // left edge of the browser window
 
   const waypoints = [
-    { x: windowLeft + 40, y: windowTop + NAV_Y / 2, frame: 0 },
-    ...HOVER_FRAMES.map((hf, i) => ({
-      x: windowLeft + NAV_X[i],
-      y: windowTop + NAV_Y / 2,
-      frame: hf,
-    })),
-    { x: windowLeft + NAV_X[3], y: windowTop + NAV_Y / 2 + 4, frame: 105 },
+    { x: WIN_LEFT + 60,       y: NAV_Y_CENTER, frame: 0   }, // start left of first link
+    { x: WIN_LEFT + NAV_X[0], y: NAV_Y_CENTER, frame: 10  }, // hover "Wie es läuft"
+    { x: WIN_LEFT + NAV_X[1], y: NAV_Y_CENTER, frame: 35  }, // hover "Projekte"
+    { x: WIN_LEFT + NAV_X[2], y: NAV_Y_CENTER, frame: 60  }, // hover "Preise"
+    { x: WIN_LEFT + NAV_X[3], y: NAV_Y_CENTER, frame: 90  }, // hover "Jetzt anfragen" (CTA)
+    { x: WIN_LEFT + NAV_X[3], y: NAV_Y_CENTER + 2, frame: 110 }, // hold on CTA
   ];
 
   const clicks = CLICK_FRAMES.map((cf) => ({ frame: cf, duration: 10 }));

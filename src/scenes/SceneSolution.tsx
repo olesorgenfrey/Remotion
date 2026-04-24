@@ -168,13 +168,27 @@ export const SceneSolution: React.FC = () => {
         ))}
       </div>
 
+      {/*
+        Check items: padding-left=80, circle diameter=56 → circle center x=80+28=108
+        Content centered at y=960. Before items: bar+headline+divider ≈ 350px
+        Items start at ≈ y=960-150=810 then:
+          Design  circle center: y≈838
+          Hosting circle center: y≈930  (838+56+36)
+          Pflege  circle center: y≈1022 (930+56+36)
+      */}
       <Cursor
         waypoints={[
-          { x: 80, y: 1300, frame: 40 },
-          { x: 80, y: 1380, frame: 60 },
-          { x: 80, y: 1460, frame: 80 },
+          { x: 400, y: 900,  frame: 0  },  // idle above checklist
+          { x: 108, y: 838,  frame: 38 },  // move to Design ✔
+          { x: 108, y: 930,  frame: 58 },  // move to Hosting ✔
+          { x: 108, y: 1022, frame: 78 },  // move to Pflege ✔
+          { x: 108, y: 1022, frame: 120 }, // hold
         ]}
-        clicks={[{ frame: 45 }, { frame: 65 }, { frame: 85 }]}
+        clicks={[
+          { frame: 45 },   // click Design
+          { frame: 65 },   // click Hosting
+          { frame: 85 },   // click Pflege
+        ]}
         color={C.accent}
       />
     </div>

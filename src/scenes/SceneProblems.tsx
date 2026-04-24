@@ -228,24 +228,29 @@ export const SceneProblems: React.FC = () => {
         ))}
       </div>
 
-      {/* Fast-moving cursor */}
+      {/*
+        Browser window: 860×500, centered → left=110, top=710
+        Error emoji: x=540 y=800 | "Zuletzt"-button: x=540 y=1000
+        Problem lines (padding 0 80px, centered):
+          line1 y≈860  line2 y≈970  line3 y≈1080
+      */}
       <Cursor
         waypoints={[
-          { x: 200, y: 600, frame: 0 },
-          { x: 650, y: 420, frame: 8 },
-          { x: 300, y: 700, frame: 16 },
-          { x: 750, y: 550, frame: 22 },
-          { x: 430, y: 480, frame: 30 },
-          { x: 540, y: 900, frame: 50 },
-          { x: 540, y: 980, frame: 58 },
-          { x: 540, y: 1060, frame: 68 },
+          { x: 540, y: 820,  frame: 0  },  // hover over error icon
+          { x: 540, y: 1000, frame: 10 },  // move to "Zuletzt" button
+          { x: 480, y: 920,  frame: 22 },  // back to error text
+          { x: 540, y: 1000, frame: 32 },  // click button again
+          // screen switches to problem text at ~frame 45
+          { x: 200, y: 860,  frame: 50 },  // → line 1: "Öffnungszeiten"
+          { x: 200, y: 970,  frame: 65 },  // → line 2: "Kontaktformular"
+          { x: 200, y: 1080, frame: 80 },  // → line 3: "Niemand"
         ]}
         clicks={[
-          { frame: 8 },
-          { frame: 22 },
-          { frame: 30 },
-          { frame: 50 },
-          { frame: 68 },
+          { frame: 10 },   // click "Zuletzt aktualisiert"
+          { frame: 32 },   // click button again
+          { frame: 50 },   // tap line 1
+          { frame: 65 },   // tap line 2
+          { frame: 80 },   // tap line 3
         ]}
         color={C.text}
       />
